@@ -1,0 +1,136 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="nl" lang="nl">
+<head>
+  <title></title>
+  <meta name="description" content="" />
+  <meta name="keywords" content="" />
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF8" />
+  <meta http-equiv="Content-Language" content="nl" />
+  <meta name="MSSmartTagsPreventParsing" content="true" />
+
+  <meta name="publisher" content="Your title" />
+  <meta name="author" content="Your title.org &amp; leon.vankammen.eu" />
+  <meta name="copyright" content="Copyright &#169; Your title.org &amp; Coder of salvation 2010" />
+  <style type="text/css">
+    .template { display: none }
+  </style>
+
+  <!-- Spadmin -->
+  <script type="text/javascript" src="js/page.js"></script>
+  <script type="text/javascript" src="js/restful.standalone.min.js"></script>
+  <script type="text/javascript" src="js/transparency.min.js"></script>
+  <script type="text/javascript" src="js/nanobar.min.js"></script>
+  <script type="text/javascript" src="js/main.js"></script>
+  
+  <!--
+     -[> fake REST server: only for testing purposes <]
+     -<script type="text/javascript" src="js/FakeRest.min.js"></script>
+     -<script type="text/javascript" src="http://sinonjs.org/releases/sinon-server-1.17.3.js"></script>
+     -->
+</head>
+  <body>
+    <!-- menu -->
+    <ul id="menu">
+      <li><a href="/user/123">/user/123</a></li>
+      <li><a href="/users">/users</a></li>
+      <li><a href="/foo">/foo</a></li>
+    </ul>
+
+    <!-- page -->
+    <div id="page"></div>
+
+    <!-- templates -->
+
+    <div id="viewUsers" class="template">
+      <h2 class="title"></h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+          </tr>
+        </thead>
+        <tbody class="users">
+          <tr>
+            <td class="name"></td>
+            <td class="email"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <script type="text/javascript">
+      var spadmin = new Spadmin({
+        content: '#page',   
+        apiurl: 'http://localhost:3000'
+      })
+
+      spadmin.render('#menu', [
+        {href:"/user/123", title:"/user/123"}, 
+        {href:"/users",    title:"/users"}, 
+        {href:"/notfound", title:"/notfound"}
+      ])
+
+      /*
+       * initialize fake REST server (monkeypatch XMLHTTPRequest)
+      var restServer = new FakeRest.Server('http://localhost:3000');
+      restServer.init({
+        users:[
+          { name: "John Doo", email: "john@doe.com"}, 
+          { name: "Foo Bar",  email: "foo@bar.com"}
+        ]
+      });
+      var server = sinon.fakeServer.create();
+      server.respondWith(restServer.getHandler());
+
+      console.dir( spadmin.api.all('users').getAll() )
+       */
+
+
+      /*
+       * custom routing + pages
+       */
+      var pages = {
+
+        viewUser: function () { 
+          spadmin.render( '/viewUser.html',  {
+            title:"View user", 
+            name: "John Doe", 
+            email: "john@doe.com"
+          })
+        }, 
+
+        viewUsers: function () { 
+          spadmin.render( '#viewUsers', { 
+            title: "View users", 
+            users: [
+              { name: "John Doe", email: "john@doe.com"}, 
+              { name: "Foo Bar",  email: "foo@bar.com"}
+            ]
+          })
+        }, 
+
+        notFound : function () {
+          alert("not found")
+        }
+
+      }
+
+      spadmin.page( function (ctx, next) {
+        console.log("router change!")
+        console.dir(ctx)   
+        next()
+      })
+      spadmin.page('/user/:user', pages.viewUser  )
+      spadmin.page('/users',      pages.viewUsers )
+      spadmin.page('*',           pages.notFound  )
+
+      /*
+       * setup REST client
+       */
+
+    </script>
+
+  </body>
+</html>

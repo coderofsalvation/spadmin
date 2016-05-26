@@ -1,0 +1,21 @@
+{
+  "name": "restful-admin-spa",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "nanobar": "^0.4.2",
+    "page": "^1.7.1",
+    "restful.js": "^0.9.6",
+    "transparency": "^1.0.0"
+  },
+  "devDependencies": {
+    "fakerest": "^1.1.4",
+    "sinon": "^1.14.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
