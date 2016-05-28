@@ -4,12 +4,12 @@
   "description":"SPA rest-to-admin interface RAD-style in vanilla js",
   "main": "public/js/main.js",
   "dependencies": {
+  },
+  "devDependencies": {
     "nanobar": "^0.4.2",
     "page": "^1.7.1",
     "restful.js": "^0.9.6",
-    "transparency": "^1.0.0"
-  },
-  "devDependencies": {
+    "transparency": "^1.0.0",
     "browserify": "^13.0.1",
     "fakerest": "^1.1.4",
     "minify": "^2.0.9",
