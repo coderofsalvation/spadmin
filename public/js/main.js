@@ -1,14 +1,13 @@
-var Spadmin = function(opts){
+var Spadmin = function(){
   console.log("*TODO* add typeshave")
-  this.pageid = opts.content.replace(/^#/g, '')
   this.page = page
   this.template = Transparency
   this.loader = new Nanobar()
-  this.init(opts)
 }
 
 Spadmin.prototype.init = function(opts){
   console.log("inited")
+  this.pageid = opts.content.replace(/^#/g, '')
   this.page({ hashbang: true })
   this.api = restful(opts.apiurl)
 }
@@ -25,10 +24,8 @@ Spadmin.prototype.renderDOM = function (domel, data,  targetid) {
     target = document.getElementById(targetid)
     if( !target ) throw "cannot find domid #"+targetid
   } 
-  console.dir(data[1]||{})
   this.template.render( domel, data[0] || data, data[1] || {} )
   if( targetid ) target.innerHTML = domel.innerHTML 
-  console.log(target.innerHTML)
 }
 
 Spadmin.prototype.render = function (template, data, targetid) {
