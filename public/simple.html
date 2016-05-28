@@ -16,23 +16,8 @@
     .template { display: none }
   </style>
 
-  <!-- Spadmin -->
   <script type="text/javascript" src="dist/spadmin.min.js"></script>
 
-
-  <!--
-     -<script type="text/javascript" src="js/page.js"></script>
-     -<script type="text/javascript" src="js/restful.standalone.min.js"></script>
-     -<script type="text/javascript" src="js/transparency.min.js"></script>
-     -<script type="text/javascript" src="js/nanobar.min.js"></script>
-     -<script type="text/javascript" src="js/main.js"></script>
-     -->
-  
-  <!--
-     -[> fake REST server: only for testing purposes <]
-     -<script type="text/javascript" src="js/FakeRest.min.js"></script>
-     -<script type="text/javascript" src="http://sinonjs.org/releases/sinon-server-1.17.3.js"></script>
-     -->
 </head>
   <body>
     <!-- menu -->
@@ -43,7 +28,6 @@
         <li><a href="#" class="item"></a></li>
       </div>
     </ul>
-
 
     <!-- page -->
     <div id="page"></div>
@@ -89,22 +73,6 @@
       }])
 
       /*
-       * initialize fake REST server (monkeypatch XMLHTTPRequest)
-      var restServer = new FakeRest.Server('http://localhost:3000');
-      restServer.init({
-        users:[
-          { name: "John Doo", email: "john@doe.com"}, 
-          { name: "Foo Bar",  email: "foo@bar.com"}
-        ]
-      });
-      var server = sinon.fakeServer.create();
-      server.respondWith(restServer.getHandler());
-
-      console.dir( spadmin.api.all('users').getAll() )
-       */
-
-
-      /*
        * custom routing + pages
        */
       var pages = {
@@ -129,18 +97,9 @@
 
       }
 
-      spadmin.page( function (ctx, next) {
-        console.log("router change!")
-        console.dir(ctx)   
-        next()
-      })
       spadmin.page('/user/:user', pages.viewUser  )
       spadmin.page('/users',      pages.viewUsers )
       spadmin.page('*',           function(){ alert("not found"); } )
-
-      /*
-       * setup REST client
-       */
 
     </script>
 

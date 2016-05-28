@@ -13,32 +13,54 @@ Spadmin.prototype.init = function(opts){
   this.api = restful(opts.apiurl)
 }
 
-Spadmin.prototype.render = function (target, data) {
-  var page     = document.getElementById(this.pageid)
-  var is_url   = target.match(/^http/) != null || target.match(/\//) != null
-  var is_domid = target.match(/^#/) != null
+Spadmin.prototype.renderPage = function(template, data){
+  this.update( this.pageid, {show:false})
+  this.render(template, data, this.pageid )
+  this.update( this.pageid, {show:true})
+}
+
+Spadmin.prototype.renderDOM = function (domel, data,  targetid) {
+  var target = domel
+  if( targetid ){
+    target = document.getElementById(targetid)
+    if( !target ) throw "cannot find domid #"+targetid
+  } 
+  console.dir(data[1]||{})
+  this.template.render( domel, data[0] || data, data[1] || {} )
+  if( targetid ) target.innerHTML = domel.innerHTML 
+  console.log(target.innerHTML)
+}
+
+Spadmin.prototype.render = function (template, data, targetid) {
+  var template_is_url   = template.match(/^http/) != null || template.match(/\//) != null
+  var template_is_domid = template.match(/^#/) != null
+  if( targetid != undefined && targetid.length ) targetid = targetid.replace(/^#/, '')
   var me = this
   var html = ''
-  this.loader.go(0)
-  var _render = function(page, html, data){
-    var div = document.createElement('div')
-    div.innerHTML = html
-    me.template.render( div, data )
-    me.update(page, div.innerHTML, data)
-  }
-  if( is_domid ){
-    var domel = document.getElementById( target.replace(/^#/,'') )
-    _render(page,  domel.innerHTML, data)
-  }else{
-    fetch( target ) 
+
+  // fetch template using url or domid
+  if( template_is_domid ){
+    var domel = document.getElementById( template.replace(/^#/,'') )
+    this.renderDOM( domel, data, targetid )
+  }else if(template_is_url){
+    fetch( template ) 
     .then(function(response) { return response.text() })
     .then(function(body) {
-      _render( page, body,  data )
+      var domel = document.createElement('div')
+      domel.innerHTML = body
+      me.renderDOM( domel, data, targetid )
     })
+  }else{
+    this.renderDOM(domel, data, targetid ) // domid = domelement
   }
 }
 
-Spadmin.prototype.update = function (page, html, data) {
-  page.innerHTML = html
-  this.loader.go(100)
-}
+Spadmin.prototype.update = function (target, opts){
+  if( opts && opts.show != undefined){
+    if( opts.show === false) this.loader.go(0)
+    if( opts.show === true ) this.loader.go(100)
+  }
+} 
+
+window.Spadmin = Spadmin
+window.Nanobar = Nanobar

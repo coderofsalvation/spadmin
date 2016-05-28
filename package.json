@@ -2,7 +2,7 @@
   "name": "restful-admin-spa",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "public/js/main.js",
   "dependencies": {
     "nanobar": "^0.4.2",
     "page": "^1.7.1",
@@ -10,10 +10,14 @@
     "transparency": "^1.0.0"
   },
   "devDependencies": {
+    "browserify": "^13.0.1",
     "fakerest": "^1.1.4",
+    "minify": "^2.0.9",
     "sinon": "^1.14.1"
   },
   "scripts": {
+    "build": "cd public/js && minify page.js restful.standalone.min.js transparency.min.js nanobar.min.js main.js > ../../dist/spadmin.min.js", 
+    "run": "nodemon -w public app.js", 
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
