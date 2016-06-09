@@ -8,7 +8,7 @@ var Spadmin = function(){
 Spadmin.prototype.init = function(opts){
   console.log("inited")
   this.pageid = opts.content.replace(/^#/g, '')
-  this.page({ hashbang: true })
+  this.page() 
   this.api = restful(opts.apiurl)
 }
 
@@ -28,12 +28,18 @@ Spadmin.prototype.renderDOM = function (domel, data,  targetid) {
   if( targetid ) target.innerHTML = domel.innerHTML 
 }
 
+Spadmin.prototype.renderHTML = function (domel, data) {
+  var d = document.createElement("div")
+  d.innerHTML = domel.innerHTML
+  this.template.render( d, data[0] || data, data[1] || {} )
+  return d.innerHTML
+}
+
 Spadmin.prototype.render = function (template, data, targetid) {
   var template_is_url   = template.match(/^http/) != null || template.match(/\//) != null
   var template_is_domid = template.match(/^#/) != null
   if( targetid != undefined && targetid.length ) targetid = targetid.replace(/^#/, '')
   var me = this
-  var html = ''
 
   // fetch template using url or domid
   if( template_is_domid ){
