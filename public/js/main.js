@@ -26,6 +26,19 @@ Spadmin.prototype.renderDOM = function (domel, data,  targetid) {
   } 
   this.template.render( domel, data[0] || data, data[1] || {} )
   if( targetid ) target.innerHTML = domel.innerHTML 
+  this.executeScripts( domel ) 
+}
+
+Spadmin.prototype.executeScripts = function( el ){
+  var codes = el.getElementsByTagName("script");   
+  for(var i=0;i<codes.length;i++){
+    if( codes[i].src == undefined ) eval(codes[i].text);  
+    else {
+      var scriptNode = document.createElement('script');
+      scriptNode.src = codes[i].src;
+      document.body.appendChild(scriptNode)
+    }
+  }
 }
 
 Spadmin.prototype.renderHTML = function (domel, data) {
