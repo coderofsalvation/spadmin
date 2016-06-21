@@ -1,25 +1,26 @@
 {
   "name": "spadmin",
-  "version": "1.0.4",
-  "description":"SPA rest-to-admin interface RAD-style in vanilla js",
+  "version": "1.0.6",
+  "description": "SPA rest-to-admin interface RAD-style in vanilla js",
   "main": "public/js/main.js",
-  "dependencies": {
-  },
+  "dependencies": { },
   "devDependencies": {
-    "nanobar": "^0.4.2",
-    "page": "^1.7.1",
-    "restful.js": "^0.9.6",
-    "transparency": "^1.0.0",
+    "panoptic": "0.0.9",
     "browserify": "^13.0.1",
     "fakerest": "^1.1.4",
     "minify": "^2.0.9",
-    "sinon": "^1.14.1"
+    "nanobar": "^0.4.2",
+    "page": "^1.7.1",
+    "restful.js": "^0.9.6",
+    "sinon": "^1.14.1",
+    "transparency": "^1.0.0"
   },
   "scripts": {
-    "build": "cd public/js && minify page.js restful.standalone.min.js transparency.min.js nanobar.min.js main.js > ../../dist/spadmin.min.js", 
-    "run": "nodemon -w public app.js", 
+    "build": "cd public/js && minify panoptic.min.js page.js restful.standalone.min.js transparency.min.js nanobar.min.js main.js > ../../dist/spadmin.min.js",
+    "run": "nodemon -w public app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": "https://github.com/coderofsalvation/spadmin.git",
   "author": "",
   "license": "ISC"
 }

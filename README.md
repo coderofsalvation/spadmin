@@ -5,8 +5,7 @@ A bunch of modules to allow RAD for a SPA rest-to-admin interface:
 * `Spadmin.api`: REST-to-object mapping using [restful.js](https://npmjs.org/package/restful.js)
 * `Spadmin.loader`: hipster toploaderbar using [nano](https://npmjs.org/package/nanobar)
 * `Spadmin.fetch`: fetch http request polyfill [fetch](https://github.com/github/fetch)
-
-Theme/CSS agnostic so you can roll your own (or use Metronics/AdminLTE/SB Admin)
+* `Spadmin.object`: Simple PubSub / Observers / Functional Reactive Programming using [panoptic](https://github.com/davidrekow/panoptic)
 
 ## Usage 
 
@@ -85,4 +84,9 @@ You can override the 'update' function like so :
     $ node app.js
    
 now surf to `http://localhost:3000`
+
+## Philosophy
+
+* framework-agnostic javascript micro-framework
+* Theme/CSS agnostic so you can roll your own (or use Metronics/AdminLTE/SB Admin)
 
