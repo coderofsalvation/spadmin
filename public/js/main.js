@@ -20,7 +20,7 @@ Spadmin.prototype.renderPage = function(template, data){ // evaluates transparen
   this.update( this.pageid, {show:true})
 }
 
-Spadmin.prototype.renderDOM = function (domel, data,  targetid) { // evaluates transparency-domtemplate+data into (dom) targetid-string (or replaces domtemplate)
+Spadmin.prototype.renderDOM = function (domel, data,  targetid,  cb) { // evaluates transparency-domtemplate+data into (dom) targetid-string (or replaces domtemplate)
   try{
     var target = domel
     if( targetid ){
@@ -30,6 +30,7 @@ Spadmin.prototype.renderDOM = function (domel, data,  targetid) { // evaluates t
     this.template.render( domel, data[0] || data, data[1] || {} )
     if( targetid ) target.innerHTML = domel.innerHTML 
     this.executeScripts( domel ) 
+    if( cb  ) cb(domel, arguments) 
   }catch (e){ 
     console.dir( {args:arguments, func:"renderDOM", error:e } ) 
   }
@@ -38,8 +39,8 @@ Spadmin.prototype.renderDOM = function (domel, data,  targetid) { // evaluates t
 Spadmin.prototype.executeScripts = function( el ){ // evaluates scripttags found in el.innerHTML
   var codes = el.getElementsByTagName("script");   
   for(var i=0;i<codes.length;i++){
-    if( codes[i].src == undefined ) eval(codes[i].text);  
-    else this.loadScript( codes[i].src )
+    if( codes[i].text ) (new Function( 'return (' + codes[i].text + ')'  )()) 
+    if( codes[i].src  ) this.loadScript( codes[i].src )
   }
 }
 
@@ -62,7 +63,7 @@ Spadmin.prototype.renderHTML = function (domel, data) { // evaluates transparenc
   }
 }
 
-Spadmin.prototype.render = function (template, data, targetid) { // evaluates transparency-template (url or domid) + data into targetid (dom id string)
+Spadmin.prototype.render = function (template, data, targetid,  cb) { // evaluates transparency-template (url or domid) + data into targetid (dom id string)
   try{
     var template_is_url   = template.match(/^http/) != null || template.match(/\//) != null
     var template_is_domid = template.match(/^#/) != null
@@ -72,17 +73,17 @@ Spadmin.prototype.render = function (template, data, targetid) { // evaluates tr
     // fetch template using url or domid
     if( template_is_domid ){
       var domel = document.getElementById( template.replace(/^#/,'') )
-      this.renderDOM( domel, data, targetid )
+      this.renderDOM( domel, data, targetid, cb )
     }else if(template_is_url){
       fetch( template ) 
       .then(function(response) { return response.text() })
       .then(function(body) {
         var domel = document.createElement('div')
         domel.innerHTML = body
-        me.renderDOM( domel, data, targetid )
+        me.renderDOM( domel, data, targetid, cb )
       })
     }else{
-      this.renderDOM(domel, data, targetid ) // domid = domelement
+      this.renderDOM(domel, data, targetid, cb ) // domid = domelement
     }
   }catch (e){ 
     console.dir( {args:arguments, func:"spadmin.render", error:e } ) 

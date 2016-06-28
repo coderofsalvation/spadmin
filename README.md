@@ -42,7 +42,7 @@ A bunch of modules to allow RAD for a SPA rest-to-admin interface:
 
 For a full example see [simple.html](public/simple.html)
 
-## Rendering a menu 
+## Template engine: rendering a menu 
 
     <ul id="#menu">
       <div class="items">
@@ -54,13 +54,18 @@ For a full example see [simple.html](public/simple.html)
       spadmin.render( '#menu', [{
         title: "Menu", 
         items: [
-          {item: "/user/123"}, 
-          {item: "/users"} 
+          {item: "/user/123",  foo: "#"}, 
+          {item: "/users",  foo: "#"} 
         ]
       },{
         items: {
           item: {
-            href: function(params){ return params.element.innerHTML; }
+            href: function(params){ return this.foo + params.element.innerHTML; }, 
+            onclick: function(params){ 
+              return '('+function(){ 
+                alert('hi!')
+              }+')()'
+            }
           }
         }
       }])
