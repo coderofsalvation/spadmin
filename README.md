@@ -71,6 +71,18 @@ For a full example see [simple.html](public/simple.html)
       }])
     </script>
 
+Functions:
+
+    Spadmin.prototype.init(opts)                             // initializes spadmin
+    Spadmin.prototype.executeScripts( el )                   // evaluates scripttags found in el.innerHTML
+    Spadmin.prototype.loadScript(url)                        // loads js-url and evaluates (synchronously)
+    Spadmin.prototype.renderPage(template, data)             // evaluates transparency-template+data into spadmin.pageid
+    Spadmin.prototype.render(template, data, targetid,  cb)  // evaluates transparency-template (url or domid) + data into targetid (dom id string)
+    Spadmin.prototype.renderDOM(domel, data,  targetid,  cb) // evaluates transparency-domtemplate+data into (dom) targetid-string (or replaces domtemplate)
+    Spadmin.prototype.renderHTML(domel, data)                // evaluates transparency-data into domelement (and returns html-string)
+    Spadmin.prototype.update(target, opts)                   // monkeypatchable function to control transitions between renderPage()-calls
+    Spadmin.prototype.fp                                     // fp/frp functions (See below)
+
 ## Transitions
 
 You can override the 'update' function like so :
@@ -90,8 +102,35 @@ You can override the 'update' function like so :
    
 now surf to `http://localhost:3000`
 
+## FP / FRP / Reactive programming
+
+FP/FRP is hot atm, and it promotes (arguably) clean code.
+Instead of including frameworks like RSJX/Baconjs, `Spadmin.fp` includes some barebone fp functions to facilitate reactive/streams:
+
+    createEventStream('.button', ['click','mouseover'] )(
+      chain( 
+        pick('target.innerHTML'), 
+        haltOnEmptyString, 
+        handleButton
+      ) 
+    )
+
+> The snippet above will fire the chain on any __click__ or __mouseover__ events from all buttons with classname '.button'
+
+The Functions:
+
+    spadmin.fp.chain()                                      // combine functions
+    spadmin.fp.pipe()                                       // pipe(curry(add)(1), curry(mul)(2))(2), will output 6
+    spadmin.fp.ncurry(n, f, as)                             // finite curry, ncurry(2, add)(1)(2) will output 3
+    spadmin.fp.eq(str, path)                                // eq("foo") or eq("foo", 'path.to.value') does stringcompare on function input
+    spadmin.fp.curry(f)                                     // anonymous curry, curry(add)(1)(2) will output 3                
+    spadmin.fp.pick(x)                                      // pick value from input
+    spadmin.fp.createEventStream(selector, event_or_events) // allows barebones DOM eventstreams (think baconjs/rxjs)
+    spadmin.fp.mapAsync(arr, done, next)                    // async loop over array
+
+> see index.html for a usage example, and feel free to add more to your own taste (functions were taken from [essentialjs](https://github.com/coderofsalvation/essential.js))
+
 ## Philosophy
 
 * framework-agnostic javascript micro-framework
 * Theme/CSS agnostic so you can roll your own (or use Metronics/AdminLTE/SB Admin)
-

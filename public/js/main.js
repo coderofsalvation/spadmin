@@ -44,7 +44,7 @@ Spadmin.prototype.executeScripts = function( el ){ // evaluates scripttags found
   }
 }
 
-Spadmin.prototype.loadScript = function(url){
+Spadmin.prototype.loadScript = function(url){ // loads js-url and evaluates (synchronously)
   var scriptNode = document.createElement('script');
   scriptNode.src = url
   scriptNode.async = false
@@ -97,9 +97,105 @@ Spadmin.prototype.update = function (target, opts){ // monkeypatchable function 
   }
 } 
 
-window.Spadmin = Spadmin
-window.Nanobar = Nanobar
-window.mapAsync =   mapAsync = function(arr, done, cb) {
+
+var fp = function(){}
+
+fp.prototype.chain = function(){
+  var chain
+  for ( var i in arguments  ) chain = !chain ? arguments[i] : fp.prototype.pipe(chain,arguments[i]) 
+  return chain
+}
+
+fp.prototype.pipe = function() { // FRP function, pipe(curry(add)(1), curry(mul)(2))(2), will output 6
+  var fs;
+  fs = 1 <= arguments.length ? [].slice.call(arguments, 0) : [];
+  var ret = fs.reverse().reduce( function(f, g) {
+    return function() {
+      var as;
+      as = 1 <= arguments.length ? [].slice.call(arguments, 0) : [];
+      return f(g.apply(null, as));
+    };
+  });                                                                                                                                                                                         
+  return ret
+}
+
+fp.prototype.ncurry = function(n, f, as) { // FRP function: finite curry, ncurry(2, add)(1)(2) will output 3
+  if (as == null) {
+    as = [];
+  } 
+  return function() {
+    var bs;
+    bs = 1 <= arguments.length ? [].slice.call(arguments, 0) : [];
+    bs = as.concat(bs);
+    if (bs.length < n) {                   
+      return fp.prototype.ncurry(n, f, bs);             
+    } else {
+      return f.apply(null, bs);            
+    }
+  };
+}
+
+fp.prototype.eq = function(str, path){ // FRP function: eq("foo") or eq("foo", 'path.to.value') does stringcompare on function input
+  return curry(function(str,path,v){
+    if( str == v || str == pick(path)(v) ) return v
+  })(str)(path)
+}
+
+fp.prototype.curry = function(f) { // FRP function: anonymous curry, curry(add)(1)(2) will output 3                
+  me = this
+  return function() {                      
+    var as;                                
+    as = 1 <= arguments.length ? [].slice.call(arguments, 0) : [];
+    if (f.length > as.length) {            
+      return fp.prototype.ncurry(f.length, f, as);      
+    } else {
+      return f.apply(null, as);            
+    }
+  };
+}
+
+fp.prototype.pick = fp.prototype.curry(function(x, xs) { // FRP function
+  return String(x).split('.').reduce(function(acc, x) {
+    if (acc == null) {
+      return;
+    }
+    if( fp.prototype.debug ) console.log("-- spadmin.fp.pick("+x+","+xs+")")
+    return acc[x];
+  }, xs);
+})
+
+fp.prototype.createEventStream = function(selector, event_or_events) { // FRP function: allows barebones DOM eventstreams (think baconjs/rxjs)
+  var me = this
+  var events = typeof event_or_events == "string" ? [event_or_events] : event_or_events 
+  console.dir(events)
+  var ret = function(next) {
+    var element, elements, l, len, results;
+    function addEvents(el, events) {
+      events.map(function (event) {
+        el.addEventListener(event, next)         
+      }) 
+    }
+    if (selector[0] === "#") {
+      element = document.querySelector(selector);
+      if (element) {
+        addEvents(element, events)
+        return element
+      }
+    } else {
+      var elements = document.querySelectorAll(selector)
+      Array.prototype.forEach.call(
+          elements,  
+          function(el){
+            addEvents(el, events )
+          }
+      );
+      return elements
+    }
+  }
+  return ret 
+}
+
+fp.prototype.mapAsync = function(arr, done, cb) {
   var f, funcs, i, k, v;
   funcs = [];
   i = 0;
@@ -121,3 +217,8 @@ window.mapAsync =   mapAsync = function(arr, done, cb) {
   return funcs[0]();
 };
 
+
+Spadmin.prototype.fp = new fp
+
+window.Spadmin = Spadmin
+window.Nanobar = Nanobar

@@ -42,6 +42,7 @@
       <div class="items">
         <li><a href="#" class="item"></a></li>
       </div>
+      <button class="button"/>foo</button>
     </ul>
 
 
@@ -65,11 +66,21 @@
           </tr>
         </tbody>
       </table>
+      <button id="mybutton" class="button"/>refresh</button>
     </div>
 
     <script type="text/javascript">
-      
-      var spadmin = new Spadmin({
+
+      var spadmin = window.spadmin = new Spadmin()
+
+      // FP goodies
+      var chain             = spadmin.fp.chain
+      var curry             = spadmin.fp.curry
+      var pick              = spadmin.fp.pick
+      var createEventStream = spadmin.fp.createEventStream
+
+      spadmin.init({
+        debug: true,
         content: '#page',   
         apiurl: 'http://localhost:3000'
       })
@@ -125,22 +136,39 @@
               { name: "Foo Bar",  email: "foo@bar.com"}
             ]
           })
+
+          // or create your own 
+          var haltOnEmptyString  = function(str){
+            if( str.length ) return str 
+          }
+
+          var handleButton = function(value){
+            if( !value ) return
+            console.log("id="+value)
+          }
+
+          createEventStream('.button', ['click','mouseover'] )(
+            chain( 
+              pick('target.innerHTML'), 
+              haltOnEmptyString, 
+              handleButton
+            ) 
+          )
         }, 
 
       }
 
-      spadmin.page( function (ctx, next) {
-        console.log("router change!")
-        console.dir(ctx)   
-        next()
-      })
+      //spadmin.page( function (ctx, next) {
+      //  console.log("router change!")
+      //  console.dir(ctx)   
+      //  next()
+      //})
       spadmin.page('/user/:user', pages.viewUser  )
       spadmin.page('/users',      pages.viewUsers )
-      spadmin.page('*',           function(){ alert("not found"); } )
+      //spadmin.page('*',           function(){ alert("not found"); } )
 
-      /*
-       * setup REST client
-       */
+      // goto url page
+      spadmin.page(document.location.pathname)
 
     </script>
 
