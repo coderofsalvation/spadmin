@@ -177,12 +177,12 @@ You can easily setup an api like this:
 
 Voila! Now `spadmin.api.foo` gives you these functions:
   
-  getAll(payload, headers)
-  get(id, payload, headers)
-  post(id, payload, headers)
-  put(id, payload, headers)
-  patch(id, payload, headers)
-  options(id, payload, headers)
+    getAll(payload, headers)
+    get(id, payload, headers)
+    post(id, payload, headers)
+    put(id, payload, headers)
+    patch(id, payload, headers)
+    options(id, payload, headers)
 
 Example:
 
@@ -194,6 +194,8 @@ Example:
     spadmin.api.foo.get('134').then(function(item){   // GET {apiurl}/foo/134
 
     })
+
+> NOTE: pass the apiurl using spadmin.init()
 
 Global headers & hooks
 
