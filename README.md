@@ -95,7 +95,7 @@ You can override the 'update' function like so :
 
 ## States / events 
 
-An eventbus is handy to easily distribute data/events, state is handy to unregister/ignore code execution
+An eventbus is handy to easily distribute data/events:
 
     spadmin.bus.state("normal")
 
@@ -112,6 +112,11 @@ An eventbus is handy to easily distribute data/events, state is handy to unregis
     spadmin.bus.publish("foo", {foo:"bar"})
 
     var mybus = new spadmin.bus // or roll your own stateful eventbus
+
+Why state/bus is handy in an applications:
+
+* unregister/ignore code execution
+* merging datastreams
 
 ## Example server 
 
