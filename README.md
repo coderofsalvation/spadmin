@@ -2,7 +2,7 @@ A wrapper around barebone npm-modules to easify framework-agnostic SPA rest-to-a
 
 * `Spadmin.page`: Single Page Application (SPA) using [page](https://npmjs.org/package/page)
 * `Spadmin.template`: reactive templates using [transparency](https://npmjs.org/package/transparency) 
-* `Spadmin.api`: REST-to-object mapping using [restful.js](https://npmjs.org/package/restful.js)
+* `Spadmin.api`: RESTapi-to-object mapping using [superagent](https://npmjs.org/package/superagent)
 * `Spadmin.loader`: hipster toploaderbar using [nano](https://npmjs.org/package/nanobar)
 * `Spadmin.fetch`: fetch http request polyfill [fetch](https://github.com/github/fetch)
 * `Spadmin.bus` a stateful pubsub bus using [stateful-event](https://npmjs.org/package/stateful-event)
@@ -169,6 +169,45 @@ An example:
     spadmin.bus.state("normal")     // event will cascade into handleButton
     //spadmin.bus.state("offline")  // event will not cascade into handleButton
 
+## REST / api
+
+You can easily setup an api like this:
+
+    spadmin.api.addEndpoint("foo")
+
+Voila! Now `spadmin.api.foo` gives you these functions:
+  
+  getAll(payload, headers)
+  get(id, payload, headers)
+  post(id, payload, headers)
+  put(id, payload, headers)
+  patch(id, payload, headers)
+  options(id, payload, headers)
+
+Example:
+
+    // request items from api
+    spadmin.api.foo.getAll().then(function(items){    // GET {apiurl}/foo
+
+    })
+
+    spadmin.api.foo.get('134').then(function(item){   // GET {apiurl}/foo/134
+
+    })
+
+Global headers & hooks
+
+    api.headers['Authorization'] = 'Basic '+btoa( me.data.ui.api.login+":"+me.data.ui.api.password )
+    api.headers['Accept']        = 'application/json'
+
+    api.beforeRequest( function(config){
+      spadmin.bus.state("loading")
+    })
+
+    api.afterRequest( function(config){
+      spadmin.bus.state("loading")
+    })
+    
 ## Philosophy
 
 * framework-agnostic javascript micro-framework

@@ -1,3 +1,4 @@
+
 var Spadmin = function(){
   console.log("*TODO* add typeshave")
   this.channels = {}
@@ -5,6 +6,7 @@ var Spadmin = function(){
   this.template = Transparency
   this.loader = new Nanobar()
   this.bus = new bus()
+  this.request = window.superagent
 }
 
 Spadmin.prototype.init = function(opts){ // initializes spadmin
@@ -14,7 +16,7 @@ Spadmin.prototype.init = function(opts){ // initializes spadmin
   this.opts = opts
   this.pageid = opts.content.replace(/^#/g, '')
   this.page() 
-  this.api = restful(opts.apiurl)
+  this.api = new api(opts.apiurl)
   this.bus.publish("init/post",arguments)
 }
 
@@ -229,6 +231,62 @@ fp.prototype.mapAsync = function(arr, done, cb) {
 };
 
 Spadmin.prototype.fp = new fp
+
+var api = function(apiurl){
+  this.url = apiurl
+  this.headers = {}
+  this.requestPre  = []
+  this.requestPost = []
+}
+
+api.prototype.headers = {}
+api.prototype.beforeRequest = function (cb) {
+  this.requestPre.push(cb)   
+}
+api.prototype.afterRequest = function (cb) {
+  this.requestPost.push(cb)   
+}
+
+api.prototype.addEndpoint = function ( resourcename ){
+  function returnRequestPromise(method, url, payload, headers, api) {
+
+    var config = {method:method, url:url, payload:payload, headers:headers, api:api }
+    for( i in api.requestPre ) api.requestPre[i](config)
+    var req = superagent[method]( url )
+    for( i in api.headers ) req.set( i,  api.headers[i] ) 
+    for( i in headers ) req.set( i,  headers[i] ) 
+    req.send(payload)
+    return new Promise(function(resolve, reject){
+      req.end( function(err, res){
+        for( i in api.requestPost ) api.requestPost[i](config, res, err)
+        if( !err ) resolve(res.body)
+        else reject(err, res)
+      })
+    }).catch(function(err){
+      throw err 
+    })
+  }
+  var endpoint = function(resourcename,api){
+    this.resourcename = resourcename
+    this.api = api 
+  }
+  endpoint.prototype.getAll = function(payload, headers){
+    return this.get( false, payload, headers )
+  }
+  endpoint.prototype.get = function(id, payload, headers){
+    var url = this.api.url + "/"+resourcename
+    if( id ) url+= "/"+id
+    return returnRequestPromise( "get", url, payload, headers, this.api)
+  }
+  var methods = ['post', 'put', 'options', 'patch'] 
+  methods.map( function(method){
+    endpoint.prototype[method] = function(id, payload, headers){
+      var url = this.api.url + "/"+resourcename + "/" + id
+      return returnRequestPromise( method, url, payload, headers, this.api)
+    }
+  })
+  this[resourcename] = new endpoint(resourcename, this)
+}
 
 window.Spadmin = Spadmin
 window.Nanobar = Nanobar

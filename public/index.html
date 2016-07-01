@@ -173,6 +173,11 @@
       // goto url page
       spadmin.page(document.location.pathname)
 
+      spadmin.api.addEndpoint("foo")
+      spadmin.api.foo.getAll().then(function(res){
+        console.dir(res)
+      })
+
     </script>
 
   </body>
