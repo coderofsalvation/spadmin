@@ -1,4 +1,4 @@
-A bunch of modules to allow RAD for a SPA rest-to-admin interface:
+A wrapper around barebone npm-modules to easify framework-agnostic SPA rest-to-admin interface:
 
 * `Spadmin.page`: Single Page Application (SPA) using [page](https://npmjs.org/package/page)
 * `Spadmin.template`: reactive templates using [transparency](https://npmjs.org/package/transparency) 
@@ -61,11 +61,7 @@ For a full example see [simple.html](public/simple.html)
         items: {
           item: {
             href: function(params){ return this.foo + params.element.innerHTML; }, 
-            onclick: function(params){ 
-              return '('+function(){ 
-                alert('hi!')
-              }+')()'
-            }
+            onmouseover: "blink(this)"
           }
         }
       }])
@@ -97,6 +93,26 @@ You can override the 'update' function like so :
       this.bus.state("normal")
     }
 
+## States / events 
+
+An eventbus is handy to easily distribute data/events, state is handy to unregister/ignore code execution
+
+    spadmin.bus.state("normal")
+
+    spadmin.bus.debug = true                        // prints publish()-calls to console
+
+    var fooHandler = spadmin.bus.subscribe("foo", function(data,state){
+      if( navigator.onLine && state == "normal") spadmin.bus.state("offline")
+    })
+    
+    spadmin.bus.subscribe("cleanup", function(data,state){
+      spadmin.bus.unsubscribe(fooHandler)
+    })
+
+    spadmin.bus.publish("foo", {foo:"bar"})
+
+    var mybus = new spadmin.bus // or roll your own stateful eventbus
+
 ## Example server 
 
     $ npm install restful-admin-spa request compression express body-parser
@@ -122,8 +138,7 @@ Instead of including frameworks like RSJX/Baconjs, `Spadmin.fp` includes some ba
 
 The Functions:
 
-    spadmin.fp.chain()                                      // combine functions
-    spadmin.fp.pipe()                                       // pipe(curry(add)(1), curry(mul)(2))(2), will output 6
+    spadmin.fp.chain()                                      // pass functions as arguments and have them returned as one function
     spadmin.fp.ncurry(n, f, as)                             // finite curry, ncurry(2, add)(1)(2) will output 3
     spadmin.fp.eq(str, path)                                // eq("foo") or eq("foo", 'path.to.value') does stringcompare on function input
     spadmin.fp.curry(f)                                     // anonymous curry, curry(add)(1)(2) will output 3                
@@ -131,7 +146,28 @@ The Functions:
     spadmin.fp.createEventStream(selector, event_or_events) // allows barebones DOM eventstreams (think baconjs/rxjs)
     spadmin.fp.mapAsync(arr, done, next)                    // async loop over array
 
-> see index.html for a usage example, and feel free to add more to your own taste (functions were taken from [essentialjs](https://github.com/coderofsalvation/essential.js))
+An example:
+
+    // your own fp-function
+    var continueWhenStateIsNormal = spadmin.fp.continueWhenStateIsNormal = function(e){
+      if( e && spadmin.bus.state() == "normal" ) return e
+    }
+
+    var handleButton = function(value){
+      if( !value ) return
+      // do stuff 
+    }
+
+    createEventStream('.button', ['click','mouseover'] )(
+      chain( 
+        continueWhenStateIsNormal,
+        pick('target.textContent'), 
+        handleButton
+      ) 
+    )
+
+    spadmin.bus.state("normal")     // event will cascade into handleButton
+    //spadmin.bus.state("offline")  // event will not cascade into handleButton
 
 ## Philosophy
 
