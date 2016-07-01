@@ -1,26 +1,33 @@
 var Spadmin = function(){
   console.log("*TODO* add typeshave")
+  this.channels = {}
   this.page = page
   this.template = Transparency
   this.loader = new Nanobar()
-  this.object = panoptic 
+  this.bus = new bus()
 }
 
 Spadmin.prototype.init = function(opts){ // initializes spadmin
-  console.log("inited")
+  this.bus = new bus()
+  if( opts.debug ) this.bus.debug = true
+  this.bus.publish("init",arguments,"loading")
   this.opts = opts
   this.pageid = opts.content.replace(/^#/g, '')
   this.page() 
   this.api = restful(opts.apiurl)
+  this.bus.publish("init/post",arguments)
 }
 
 Spadmin.prototype.renderPage = function(template, data){ // evaluates transparency-template+data into spadmin.pageid 
+  this.bus.publish("renderpage/pre",arguments)
   this.update( this.pageid, {show:false})
   this.render(template, data, this.pageid )
   this.update( this.pageid, {show:true})
+  this.bus.publish("renderpage/post",arguments)
 }
 
 Spadmin.prototype.renderDOM = function (domel, data,  targetid,  cb) { // evaluates transparency-domtemplate+data into (dom) targetid-string (or replaces domtemplate)
+  this.bus.publish("renderdom/pre",arguments)
   try{
     var target = domel
     if( targetid ){
@@ -30,13 +37,17 @@ Spadmin.prototype.renderDOM = function (domel, data,  targetid,  cb) { // evalua
     this.template.render( domel, data[0] || data, data[1] || {} )
     if( targetid ) target.innerHTML = domel.innerHTML 
     this.executeScripts( domel ) 
-    if( cb  ) cb(domel, arguments) 
+    if( cb  ){
+      cb(domel, arguments) 
+      this.bus.publish("renderdom/post",arguments)
+    }
   }catch (e){ 
-    console.dir( {args:arguments, func:"renderDOM", error:e } ) 
+    this.bus.publish("renderdom/post",arguments)
   }
 }
 
 Spadmin.prototype.executeScripts = function( el ){ // evaluates scripttags found in el.innerHTML
+  this.bus.publish("executeScripts",arguments)
   var codes = el.getElementsByTagName("script");   
   for(var i=0;i<codes.length;i++){
     if( codes[i].text ) (new Function( 'return (' + codes[i].text + ')'  )()) 
@@ -45,6 +56,7 @@ Spadmin.prototype.executeScripts = function( el ){ // evaluates scripttags found
 }
 
 Spadmin.prototype.loadScript = function(url){ // loads js-url and evaluates (synchronously)
+  this.bus.publish("loadscript",arguments)
   var scriptNode = document.createElement('script');
   scriptNode.src = url
   scriptNode.async = false
@@ -53,10 +65,12 @@ Spadmin.prototype.loadScript = function(url){ // loads js-url and evaluates (syn
 }
 
 Spadmin.prototype.renderHTML = function (domel, data) { // evaluates transparency-data into domelement (and returns html-string)
+  this.bus.publish("renderhtml/post",arguments)
   try{ 
     var d = document.createElement("div")
     d.innerHTML = domel.innerHTML
     this.template.render( d, data[0] || data, data[1] || {} )
+    this.bus.publish("renderhtml/post",d)
     return d.innerHTML
   }catch (e){ 
     console.dir( {args:arguments, func:"spadmin.renderHTML", error:e } ) 
@@ -64,6 +78,7 @@ Spadmin.prototype.renderHTML = function (domel, data) { // evaluates transparenc
 }
 
 Spadmin.prototype.render = function (template, data, targetid,  cb) { // evaluates transparency-template (url or domid) + data into targetid (dom id string)
+  this.bus.publish("render",arguments)
   try{
     var template_is_url   = template.match(/^http/) != null || template.match(/\//) != null
     var template_is_domid = template.match(/^#/) != null
@@ -91,10 +106,13 @@ Spadmin.prototype.render = function (template, data, targetid,  cb) { // evaluat
 }
 
 Spadmin.prototype.update = function (target, opts){ // monkeypatchable function to control transitions between renderPage()-calls
+  this.bus.publish("update",arguments,"loading")
   if( opts && opts.show != undefined){
     if( opts.show === false) this.loader.go(0)
     if( opts.show === true ) this.loader.go(100)
   }
+  this.bus.publish("update/post",arguments)
+  this.bus.state("normal")
 } 
 
 
@@ -164,15 +182,14 @@ fp.prototype.pick = fp.prototype.curry(function(x, xs) { // FRP function
   }, xs);
 })
 
-fp.prototype.createEventStream = function(selector, event_or_events) { // FRP function: allows barebones DOM eventstreams (think baconjs/rxjs)
+fp.prototype.createEventStream = function(selector, event_or_events, statefunction) { // FRP function: allows stateful DOM eventstreams (think baconjs/rxjs)
   var me = this
   var events = typeof event_or_events == "string" ? [event_or_events] : event_or_events 
-  console.dir(events)
   var ret = function(next) {
     var element, elements, l, len, results;
     function addEvents(el, events) {
       events.map(function (event) {
-        el.addEventListener(event, next)         
+        el.addEventListener(event, next )
       }) 
     }
     if (selector[0] === "#") {
@@ -216,7 +233,6 @@ fp.prototype.mapAsync = function(arr, done, cb) {
   }
   return funcs[0]();
 };
-
 
 Spadmin.prototype.fp = new fp
 

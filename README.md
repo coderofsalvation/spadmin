@@ -5,7 +5,7 @@ A bunch of modules to allow RAD for a SPA rest-to-admin interface:
 * `Spadmin.api`: REST-to-object mapping using [restful.js](https://npmjs.org/package/restful.js)
 * `Spadmin.loader`: hipster toploaderbar using [nano](https://npmjs.org/package/nanobar)
 * `Spadmin.fetch`: fetch http request polyfill [fetch](https://github.com/github/fetch)
-* `Spadmin.object`: Simple PubSub / Observers / Functional Reactive Programming using [panoptic](https://github.com/davidrekow/panoptic)
+* `Spadmin.bus` a stateful pubsub bus using [stateful-event](https://npmjs.org/package/stateful-event)
 
 ## Usage 
 
@@ -88,10 +88,13 @@ Functions:
 You can override the 'update' function like so :
 
     Spadmin.prototype.update = function (target, opts){
+      this.bus.publish("update",arguments.true)
       if( opts && opts.show != undefined){
         if( opts.show === false) this.loader.go(0)
         if( opts.show === true ) this.loader.go(100)
       }
+      this.bus.publish("update/post",arguments)
+      this.bus.state("normal")
     }
 
 ## Example server 

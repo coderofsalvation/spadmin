@@ -1,11 +1,13 @@
 {
   "name": "spadmin",
-  "version": "1.0.8",
+  "version": "1.0.10",
   "description": "SPA rest-to-admin interface RAD-style in vanilla js",
   "main": "public/js/main.js",
-  "dependencies": { },
+  "dependencies": {
+    "stateful-event": "^1.0.1",
+    "whatwg-fetch": "^1.0.0"
+  },
   "devDependencies": {
-    "panoptic": "0.0.9",
     "browserify": "^13.0.1",
     "fakerest": "^1.1.4",
     "minify": "^2.0.9",
@@ -16,7 +18,8 @@
     "transparency": "^1.0.0"
   },
   "scripts": {
-    "build": "cd public/js && minify panoptic.min.js page.js restful.standalone.min.js transparency.min.js nanobar.min.js main.js > ../../dist/spadmin.min.js",
+    "build": "cd public/js && minify stateful-event.min.js page.js restful.min.js transparency.min.js nanobar.min.js main.js > ../../dist/spadmin.min.js",
+    "builddev": "cd public/js && cat stateful-event.min.js page.js restful.min.js transparency.min.js nanobar.min.js main.js > ../../dist/spadmin.min.js",
     "run": "nodemon -w public app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

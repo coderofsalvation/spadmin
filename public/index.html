@@ -137,23 +137,26 @@
             ]
           })
 
-          // or create your own 
-          var haltOnEmptyString  = function(str){
-            if( str.length ) return str 
+          // extend fp functions with our own 
+          var continueWhenStateIsNormal = spadmin.fp.continueWhenStateIsNormal = function(e){
+            if( e && spadmin.bus.state() == "normal" ) return e
           }
 
           var handleButton = function(value){
             if( !value ) return
-            console.log("id="+value)
+            console.log("value="+value)
           }
 
           createEventStream('.button', ['click','mouseover'] )(
             chain( 
-              pick('target.innerHTML'), 
-              haltOnEmptyString, 
+              continueWhenStateIsNormal,
+              pick('target.textContent'), 
               handleButton
             ) 
           )
+
+          spadmin.bus.state("normal")     // now handleButton will be called
+          //spadmin.bus.state("offline")    // now handleButton will not be called
         }, 
 
       }
