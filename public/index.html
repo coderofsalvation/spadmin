@@ -173,10 +173,30 @@
       // goto url page
       spadmin.page(document.location.pathname)
 
+      // do some api calls
       spadmin.api.addEndpoint("foo")
+      spadmin.api.addEndpoint("foobar")
+      spadmin.api.addEndpoint("data")
+
+      // sandbox 2 of them
+      spadmin.api.sandboxUrl("foobar", {"data":{"foo":123}} )
+      spadmin.api.sandboxUrl("data",   {"path":"/js"} )
+
       spadmin.api.foo.getAll().then(function(res){
+        console.log("got endpoint foo")
         console.dir(res)
       })
+
+      spadmin.api.foobar.getAll().then(function(res){
+        console.log("got endpoint foobar")
+        console.dir(res)
+      })
+
+      spadmin.api.data.getAll().then(function(res){
+        console.log("got endpoint data")
+        console.dir(res)
+      })
+
 
     </script>
 

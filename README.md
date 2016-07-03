@@ -24,7 +24,8 @@ A wrapper around barebone npm-modules to easify framework-agnostic SPA rest-to-a
     </div>
 
     <script>
-      var spadmin = new Spadmin({
+      var spadmin = new Spadmin()
+      spadmin.init({
         content: '#page',   
         apiurl: 'http://localhost:3000'
       })
@@ -78,8 +79,11 @@ Functions:
     Spadmin.prototype.renderHTML(domel, data)                // evaluates transparency-data into domelement (and returns html-string)
     Spadmin.prototype.update(target, opts)                   // monkeypatchable function to control transitions between renderPage()-calls
     Spadmin.prototype.fp                                     // fp/frp functions (See below)
+    Spadmin.prototype.sandboxUrl(url,destination)            // configure sandboxdata for url(pattern)
 
-## Transitions
+
+
+## Page Transitions
 
 You can override the 'update' function like so :
 
@@ -93,7 +97,58 @@ You can override the 'update' function like so :
       this.bus.state("normal")
     }
 
-## States / events 
+## REST / api
+
+You can easily setup an api like this:
+
+    spadmin.api.addEndpoint("foo")
+
+Voila! Now `spadmin.api.foo` gives you these functions:
+  
+    getAll(payload, headers)
+    get(id, payload, headers)
+    post(id, payload, headers)
+    put(id, payload, headers)
+    patch(id, payload, headers)
+    options(id, payload, headers)
+
+Example:
+
+    // request items from api
+    spadmin.api.foo.getAll().then(function(items){    // GET {apiurl}/foo
+
+    })
+
+    spadmin.api.foo.get('134').then(function(item){   // GET {apiurl}/foo/134
+
+    })
+
+> NOTE: pass the apiurl using spadmin.init()
+
+Global headers & hooks could be used for api-specific purposes:
+
+    api.headers['Authorization'] = 'Basic '+btoa( me.data.ui.api.login+":"+me.data.ui.api.password )
+    api.headers['Accept']        = 'application/json'
+
+    api.beforeRequest( function(config){
+      // do something
+    })
+
+    api.afterRequest( function(config){
+      // do something
+    })
+
+## Multiple api's 
+
+    spadmin.otherapi = new api("http://otherapi.com/v1")
+    spadmin.otherapi.addEndpoint("foo")
+    spadmin.otherapi.foo.getAll().then( function(data){
+      // voila
+    })
+
+> Don't use `spadmin.api.request` or `superagent` directly: you'll lose the sandbox-, beforeRequest() and afterRequest() features.
+
+## States / events / channels
 
 An eventbus is handy to easily distribute data/events:
 
@@ -150,6 +205,8 @@ The Functions:
     spadmin.fp.pick(x)                                      // pick value from input
     spadmin.fp.createEventStream(selector, event_or_events) // allows barebones DOM eventstreams (think baconjs/rxjs)
     spadmin.fp.mapAsync(arr, done, next)                    // async loop over array
+    spadmin.fp.flipargs(function)                           // returns same function (but with reversed argument-order)
+    spadmin.fp.delay(ms)                                    // will execute 2nd argument (=function) with setTimeout(function,ms)
 
 An example:
 
@@ -174,48 +231,28 @@ An example:
     spadmin.bus.state("normal")     // event will cascade into handleButton
     //spadmin.bus.state("offline")  // event will not cascade into handleButton
 
-## REST / api
+## Offline sandbox 
 
-You can easily setup an api like this:
+You can fake responses (for offline development etc) in 2 ways, like so:
 
+    spadmin.api.addEndpoint("foobar")
     spadmin.api.addEndpoint("foo")
 
-Voila! Now `spadmin.api.foo` gives you these functions:
-  
-    getAll(payload, headers)
-    get(id, payload, headers)
-    post(id, payload, headers)
-    put(id, payload, headers)
-    patch(id, payload, headers)
-    options(id, payload, headers)
+    spadmin.api.sandboxUrl('/foobar', {'data':{"foo":true}}  ) 
+    spadmin.api.sandboxUrl('/myapi',  {'path':"/js/sandbox"} )
 
-Example:
-
-    // request items from api
-    spadmin.api.foo.getAll().then(function(items){    // GET {apiurl}/foo
-
+    spadmin.api.foobar.getAll().then(function(data){    
+      // data = {"foo":true}
     })
 
-    spadmin.api.foo.get('134').then(function(item){   // GET {apiurl}/foo/134
-
+    spadmin.api.foo.getAll().then(function(data){    
+      // data = /js/sandbox/foo/get.json instead of GET {apiurl}/myapi/foo 
     })
 
-> NOTE: pass the apiurl using spadmin.init()
+> NOTE: {apiurl} is passed using `spadmin.init()`    
 
-Global headers & hooks
-
-    api.headers['Authorization'] = 'Basic '+btoa( me.data.ui.api.login+":"+me.data.ui.api.password )
-    api.headers['Accept']        = 'application/json'
-
-    api.beforeRequest( function(config){
-      spadmin.bus.state("loading")
-    })
-
-    api.afterRequest( function(config){
-      spadmin.bus.state("loading")
-    })
-    
 ## Philosophy
 
 * framework-agnostic javascript micro-framework
 * Theme/CSS agnostic so you can roll your own (or use Metronics/AdminLTE/SB Admin)
+* easy setting up api's
