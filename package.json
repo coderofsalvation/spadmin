@@ -1,6 +1,6 @@
 {
   "name": "spadmin",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "description": "SPA rest-to-admin interface RAD-style in vanilla js",
   "main": "public/js/main.js",
   "dependencies": {

@@ -323,22 +323,24 @@ api.prototype.sandboxUrl = function(url,destination){ // configure sandboxdata f
 }
 
 api.prototype.getSandboxedUrl = function(method,url){
-  for ( var regex in this.sandbox ) {
-    var item = this.sandbox[regex]
-    var method = method.toUpperCase()
-    if( url.match( new RegExp(regex, "g") ) != null ){
+  var config = {method:method, url:url, payload:{}, headers: this.headers, api:this }
+  for ( var regex in this.sandbox ) {                                                                            
+    var item = this.sandbox[regex]                                                                               
+    var method = method.toUpperCase()                                                                            
+    if( url.match( new RegExp(regex, "g") ) != null ){                                                           
       if( item.path ){
         var url_sandboxed = url.replace(/\/?\?.*/,'').replace( this.url, item.path ) + "/" + method.toLowerCase() + ".json"
-        console.log("sandboxed url: "+method+" "+url+" => "+url_sandboxed)
+        console.log("sandboxed url: "+method+" "+url+" => "+url_sandboxed)                                       
         return url_sandboxed 
       }
-      if( item.data ){
-        console.log("sandboxed url: "+method+" "+url+" => {}")
-        for( i in this.requestPost ) this.requestPost[i](config, res, err)
-        return new Promise(function(resolve, reject){ resolve(item.data) })
+      if( item.data ){                                                                                           
+        console.log("sandboxed url: "+method+" "+url+" => {}")                                                   
+        var res = {body:item.data}                                                                               
+        for( i in this.requestPost ) this.requestPost[i](config, res)                                            
+        return new Promise(function(resolve, reject){ resolve(res.body) })                                       
       }
     }
-  }
+  }   
   return false
 }
 
@@ -346,7 +348,7 @@ Spadmin.prototype.registerElement = function (type, options) {
   for( i in options )
     if( typeof options[i] == "function" )
       options[i] = { value: options[i] }
-  var prototype = { prototype: Object.create( HTMLElement.prototype, options ) } 
+  var prototype = { "prototype": Object.create( HTMLElement.prototype, options ) } 
   return document.registerElement( type, prototype )
 }
 
