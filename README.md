@@ -6,6 +6,7 @@ A wrapper around barebone npm-modules to easify framework-agnostic SPA rest-to-a
 * `Spadmin.loader`: hipster toploaderbar using [nano](https://npmjs.org/package/nanobar)
 * `Spadmin.fetch`: fetch http request polyfill [fetch](https://github.com/github/fetch)
 * `Spadmin.bus` a stateful pubsub bus using [stateful-event](https://npmjs.org/package/stateful-event)
+* `Spadmin.registerElement`: Custom html-elements using polyfill [document-register-element](https://npmjs.org/package/document-register-element)
 
 ## Usage 
 
@@ -78,10 +79,6 @@ Functions:
     Spadmin.prototype.renderDOM(domel, data,  targetid,  cb) // evaluates transparency-domtemplate+data into (dom) targetid-string (or replaces domtemplate)
     Spadmin.prototype.renderHTML(domel, data)                // evaluates transparency-data into domelement (and returns html-string)
     Spadmin.prototype.update(target, opts)                   // monkeypatchable function to control transitions between renderPage()-calls
-    Spadmin.prototype.fp                                     // fp/frp functions (See below)
-    Spadmin.prototype.sandboxUrl(url,destination)            // configure sandboxdata for url(pattern)
-
-
 
 ## Page Transitions
 
@@ -207,6 +204,8 @@ The Functions:
     spadmin.fp.mapAsync(arr, done, next)                    // async loop over array
     spadmin.fp.flipargs(function)                           // returns same function (but with reversed argument-order)
     spadmin.fp.delay(ms)                                    // will execute 2nd argument (=function) with setTimeout(function,ms)
+    spadmin.fp.throttle(ms)                                 // will execute call, but ignore calls within x milliseconds 
+    spadmin.fp.throttleDelay(ms)                            // will only execute last call, and ignore calls within x milliseconds 
 
 An example:
 
@@ -250,6 +249,25 @@ You can fake responses (for offline development etc) in 2 ways, like so:
     })
 
 > NOTE: {apiurl} is passed using `spadmin.init()`    
+
+## Custom HTML elements
+
+Example:
+
+    <-- include this after spadmin.min.js -->
+    <script type="text/javascript" src"js/element/my-element.js"/>
+
+    <my-element></my-element>
+
+Now put this inside `js/element/my-element.js` :
+
+    var myElement = function(){
+      this.createdCallback          = function(){}
+      this.attachedCallback         = function(){}
+      this.detachedCallback         = function(){}
+      this.attributeChangedCallback = function( name, previousValue, value ){}
+    }
+    Spadmin.prototype.registerElement("my-element", new myElement )
 
 ## Philosophy
 
