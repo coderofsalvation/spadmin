@@ -16,7 +16,6 @@ Spadmin.prototype.init = function(opts){ // initializes spadmin
   this.bus.publish("init",arguments,"loading")
   this.opts = opts
   this.pageid = opts.content.replace(/^#/g, '')
-  this.page() 
   this.api = new api(opts.apiurl,this)
   this.bus.publish("init/post",arguments)
 }
@@ -47,6 +46,7 @@ Spadmin.prototype.executeScripts = function( el ){ // evaluates scripttags found
   var codes = el.getElementsByTagName("script");   
   for(var i=0;i<codes.length;i++){
     if( codes[i].text ) eval(codes[i].text)
+    //if( codes[i].text ) (new Function( 'return (' + codes[i].text + ')' )())
     if( codes[i].src  ) this.loadScript( codes[i].src )
   }
 }
@@ -106,7 +106,7 @@ Spadmin.prototype.render = function (template, data, targetid,  cb) { // evaluat
 Spadmin.prototype.update = function (target, opts){ // monkeypatchable function to control transitions between renderPage()-calls
   this.bus.publish("update",arguments,"loading")
   if( opts && opts.show != undefined){
-    if( opts.show === false) this.loader.go(0)
+    if( opts.show === false) this.loader.go(50)
     if( opts.show === true ) this.loader.go(100)
   }
   this.bus.publish("update/post",arguments)
@@ -116,7 +116,7 @@ Spadmin.prototype.update = function (target, opts){ // monkeypatchable function 
 
 var fp = function(){}
 
-fp.prototype.chain = function() { // FRP function, chain(curry(add)(1), curry(mul)(2))(2), will output 6
+fp.prototype.compose = function() { // FRP function, compose(curry(add)(1), curry(mul)(2))(2), will output 6
   var fs;
   fs = 1 <= arguments.length ? [].slice.call(arguments, 0) : [];
   var ret = fs.reverse().reduce( function(f, g) {
@@ -226,20 +226,31 @@ fp.prototype.mapAsync = function(arr, done, next) {
   return funcs[0]();
 };
 
-fp.prototype.delay = function(func,ms){
+fp.prototype.delay = function(func,ms){  // setTimeout() with arguments order swapped
   return fp.prototype.curry(function(){
     setTimeout(func,ms)
   })
 }
 
-fp.prototype.throttle = fp.prototype.curry(function(delay, fn) {
-  var timer = null;
+fp.prototype.throttleDelay = function(delay,fn){ // ignore calls within ms, and only execute last call 
+  timeoutid = null
+  return fp.prototype.curry(function(){
+    if( timeoutid != null ) clearTimeout(timeoutid)
+    timeoutid = setTimeout(fn,delay)
+  })
+}
+
+fp.prototype.throttle = fp.prototype.curry(function(delay, fn) { // execute fn, and then only execute every delay ms
+  execute = true
   return function () {
     var context = this, args = arguments;
-    clearTimeout(timer);
-    timer = setTimeout(function () {
-      fn.apply(context, args);
-    }, delay);
+    if( execute ){
+      fn.apply(context, args)
+      execute = false
+      setTimeout(function () {
+        execute = true 
+      }, delay);
+    } 
   }
 })
 
@@ -263,6 +274,7 @@ api.prototype.afterRequest = function (cb) {
 
 api.prototype.request = function(method, url, payload, headers) {
   var config = {method:method, url:url, payload:payload, headers:headers, api:this }
+  if( method == "get" && typeof payload == "string" && payload[0] == "?" ) url+=payload
   for( i in api.requestPre ) api.requestPre[i](config)
   var sandbox = this.getSandboxedUrl(method,url)
   if( sandbox && typeof sandbox != "string" ) return sandbox // return sandboxed promise
@@ -270,9 +282,10 @@ api.prototype.request = function(method, url, payload, headers) {
   var req = superagent[method]( url )
   for( i in this.headers ) req.set( i,  this.headers[i] ) 
   for( i in headers ) req.set( i,  headers[i] ) 
-  req.send(payload)
+  if( method != "get" ) req.send(payload)
   return new Promise(function(resolve, reject){
     req.end( function(err, res){
+      spadmin.bus.publish(method+"."+url.replace(/\?.*/g,"").replace(/\/[0-9]+$/,"/:id"), arguments )
       for( i in this.requestPost ) this.requestPost[i](config, res, err)
       if( !err ) resolve(res.body)
       else reject(err, res)

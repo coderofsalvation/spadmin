@@ -169,9 +169,8 @@
       spadmin.page('/user/:user', pages.viewUser  )
       spadmin.page('/users',      pages.viewUsers )
       //spadmin.page('*',           function(){ alert("not found"); } )
-
       // goto url page
-      spadmin.page(document.location.pathname)
+      spadmin.page()
 
       // do some api calls
       spadmin.api.addEndpoint("foo")

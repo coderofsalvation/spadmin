@@ -1,9 +1,10 @@
 {
   "name": "spadmin",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "SPA rest-to-admin interface RAD-style in vanilla js",
   "main": "public/js/main.js",
   "dependencies": {
+    "document-register-element": "^0.5.4",
     "stateful-event": "^1.0.1",
     "whatwg-fetch": "^1.0.0"
   },
