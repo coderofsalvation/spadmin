@@ -5,12 +5,11 @@ var Spadmin = function(){
   this.page = page
   this.template = Transparency
   this.loader = new Nanobar()
-  this.bus = new bus()
   this.request = window.superagent
 }
 
 Spadmin.prototype.init = function(opts){ // initializes spadmin
-  this.bus = new bus()
+  this.bus = new bus( opts.defaultstate || "normal")
   if( opts.debug ) this.bus.debug = true
   if( opts.sandbox ) this.sandbox = sandbox
   this.bus.publish("init",arguments,"loading")
@@ -110,7 +109,7 @@ Spadmin.prototype.update = function (target, opts){ // monkeypatchable function 
     if( opts.show === true ) this.loader.go(100)
   }
   this.bus.publish("update/post",arguments)
-  this.bus.state("normal")
+  this.bus.state( this.bus.opts.defaultstate )
 } 
 
 
