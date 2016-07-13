@@ -8,15 +8,18 @@ var Spadmin = function(){
   this.request = window.superagent
 }
 
+Spadmin.prototype.bus = new bus()
+
 Spadmin.prototype.init = function(opts){ // initializes spadmin
-  this.bus = new bus( opts.defaultstate || "normal")
+  if( opts.bus          ) this.bus = opts.bus
+  if( opts.defaultstate ) this.bus.state( opts.defaultstate )
   if( opts.debug ) this.bus.debug = true
   if( opts.sandbox ) this.sandbox = sandbox
-  this.bus.publish("init",arguments,"loading")
+  this.bus.publish("init",this,"loading")
   this.opts = opts
   this.pageid = opts.content.replace(/^#/g, '')
   this.api = new api(opts.apiurl,this)
-  this.bus.publish("init/post",arguments)
+  this.bus.publish("init/post",this)
 }
 
 Spadmin.prototype.renderPage = function(template, data){ // evaluates transparency-template+data into spadmin.pageid 

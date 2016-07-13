@@ -1,6 +1,6 @@
 {
   "name": "spadmin",
-  "version": "1.1.7",
+  "version": "1.1.9",
   "description": "SPA rest-to-admin interface RAD-style in vanilla js",
   "main": "public/js/main.js",
   "dependencies": {
@@ -10,7 +10,10 @@
   },
   "devDependencies": {
     "browserify": "^13.0.1",
+    "cheerio": "^0.20.0",
     "fakerest": "^1.1.4",
+    "glob": "^7.0.5",
+    "jsdom": "^9.4.1",
     "minify": "^2.0.9",
     "nanobar": "^0.4.2",
     "page": "^1.7.1",
@@ -19,8 +22,8 @@
     "transparency": "^1.0.0"
   },
   "scripts": {
-    "build": "cd public/js && minify document-register-element.js stateful-event.min.js page.js superagent.min.js transparency.min.js nanobar.min.js main.js > ../../dist/spadmin.min.js",
-    "builddev": "cd public/js && cat document-register-element.js stateful-event.min.js page.js superagent.min.js transparency.min.js nanobar.min.js main.js > ../../dist/spadmin.min.js",
+    "build": "cd src && cat 3rd/document-register-element.js 3rd/stateful-event.min.js 3rd/page.js 3rd/superagent.min.js 3rd/transparency.min.js 3rd/nanobar.min.js main.js > ../dist/spadmin.js && minify ../dist/spadmin.js > ../dist/spadmin.min.js",
+    "builddev": "cd src && cat 3rd/document-register-element.js 3rd/stateful-event.min.js 3rd/page.js 3rd/superagent.min.js 3rd/transparency.min.js 3rd/nanobar.min.js main.js > ../dist/spadmin.min.js",
     "run": "nodemon -w public app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

@@ -251,7 +251,7 @@ You can fake responses (for offline development etc) in 2 ways, like so:
 > NOTE: {apiurl} is passed using `spadmin.init()`    
 
 ## Custom HTML elements
-
+G
 Example:
 
     <-- include this after spadmin.min.js -->
@@ -268,6 +268,41 @@ Now put this inside `js/element/my-element.js` :
       this.attributeChangedCallback = function( name, previousValue, value ){}
     }
     Spadmin.prototype.registerElement("my-element", new myElement )
+
+## Javascript modules / Lazy loading 
+
+Instead of cool libs like `requirejs`, you can just register to the bus which is global state 
+
+main.js: 
+
+      var spadmin = new Spadmin()
+      spadmin.init({
+        content: '#page',   
+        apiurl: 'http://localhost:3000'
+      })
+
+module.js:
+      Spadmin.prototype.bus.subscribe("init/post",  function(spadmin){
+        // do stuff
+      }) 
+
+      Spadmin.prototype.bus.subscribe("init/post",  function(spadmin){
+        // do stuff
+      }) 
+
+## Initializing & Global state 
+
+By default spadmin will have a bus which is initialized in global state.
+If you don't want this (you are running 2 spadmins etc), then initialize like this:
+
+      var spadmin = new Spadmin()
+      spadmin.init({
+        bus: new bus({defaultstate:"notloggedin"}) // defaulstate is 'normal' by default
+        content: '#page',   
+        apiurl: 'http://localhost:3000'
+      })
+
+> What happened here is that this spadmin got its own bus (instead of the global one)
 
 ## Philosophy
 
