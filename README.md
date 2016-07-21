@@ -2,7 +2,7 @@ A wrapper around barebone npm-modules to easify framework-agnostic SPA rest-to-a
 
 * `Spadmin.page`: Single Page Application (SPA) using [page](https://npmjs.org/package/page)
 * `Spadmin.template`: reactive templates using [transparency](https://npmjs.org/package/transparency) 
-* `Spadmin.api`: RESTapi-to-object mapping using [superagent](https://npmjs.org/package/superagent)
+* `Spadmin.api`: RESTapi-to-object mapping using [restglue](https://npmjs.org/package/restglue)
 * `Spadmin.loader`: hipster toploaderbar using [nano](https://npmjs.org/package/nanobar)
 * `Spadmin.fetch`: fetch http request polyfill [fetch](https://github.com/github/fetch)
 * `Spadmin.bus` a stateful pubsub bus using [stateful-event](https://npmjs.org/package/stateful-event)

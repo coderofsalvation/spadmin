@@ -12,14 +12,15 @@ Spadmin.prototype.bus = new bus()
 
 Spadmin.prototype.init = function(opts){ // initializes spadmin
   if( opts.bus          ) this.bus = opts.bus
-  if( opts.defaultstate ) this.bus.state( opts.defaultstate )
+  if( opts.defaultstate ) this.bus._state = (this.bus.opts.defaultstate = opts.defaultstate )
   if( opts.debug ) this.bus.debug = true
   if( opts.sandbox ) this.sandbox = sandbox
-  this.bus.publish("init",this,"loading")
+  this.bus.publish("init",this)
   this.opts = opts
   this.pageid = opts.content.replace(/^#/g, '')
-  this.api = new api(opts.apiurl,this)
+  this.api = new restglue(opts.apiurl,this)
   this.bus.publish("init/post",this)
+  this.bus.state( this.bus.opts.defaultstate )
 }
 
 Spadmin.prototype.renderPage = function(template, data){ // evaluates transparency-template+data into spadmin.pageid 
@@ -106,13 +107,12 @@ Spadmin.prototype.render = function (template, data, targetid,  cb) { // evaluat
 }
 
 Spadmin.prototype.update = function (target, opts){ // monkeypatchable function to control transitions between renderPage()-calls
-  this.bus.publish("update",arguments,"loading")
+  this.bus.publish("update",arguments)
   if( opts && opts.show != undefined){
     if( opts.show === false) this.loader.go(50)
     if( opts.show === true ) this.loader.go(100)
   }
   this.bus.publish("update/post",arguments)
-  this.bus.state( this.bus.opts.defaultstate )
 } 
 
 
@@ -257,102 +257,6 @@ fp.prototype.throttle = fp.prototype.curry(function(delay, fn) { // execute fn, 
 })
 
 Spadmin.prototype.fp = new fp
-
-var api = function(apiurl){
-  this.url = apiurl
-  this.sandbox = {}
-  this.headers = {}
-  this.requestPre  = []
-  this.requestPost = []
-}
-
-api.prototype.headers = {}
-api.prototype.beforeRequest = function (cb) {
-  this.requestPre.push(cb)   
-}
-api.prototype.afterRequest = function (cb) {
-  this.requestPost.push(cb)   
-}
-
-api.prototype.request = function(method, url, payload, headers) {
-  var config = {method:method, url:url, payload:payload, headers:headers, api:this }
-  if( method == "get" && typeof payload == "string" && payload[0] == "?" ) url+=payload
-  for( i in api.requestPre ) api.requestPre[i](config)
-  var sandbox = this.getSandboxedUrl(method,url)
-  if( sandbox && typeof sandbox != "string" ) return sandbox // return sandboxed promise
-  url = sandbox ? sandbox : url                              // set sandboxed url
-  var req = superagent[method]( url )
-  for( i in this.headers ) req.set( i,  this.headers[i] ) 
-  for( i in headers ) req.set( i,  headers[i] ) 
-  if( method != "get" ) req.send(payload)
-  return new Promise(function(resolve, reject){
-    req.end( function(err, res){
-      spadmin.bus.publish(method+"."+url.replace(/\?.*/g,"").replace(/\/[0-9]+$/,"/:id"), arguments )
-      for( i in this.requestPost ) this.requestPost[i](config, res, err)
-      if( !err ) resolve(res.body)
-      else reject(err, res)
-    })
-  }).catch(function(err){
-    throw err 
-  })
-}
-
-api.prototype.addEndpoint = function ( resourcename ){
-  var endpoint = function(resourcename,api){
-    this.resourcename = resourcename
-    this.api = api 
-  }
-  endpoint.prototype.getAll = function(payload, headers){
-    return this.get( false, payload, headers )
-  }
-  endpoint.prototype.get = function(id, payload, headers){
-    var url = this.api.url + "/"+resourcename
-    if( id ) url+= "/"+id
-    return this.api.request( "get", url, payload, headers, this.api)
-  }
-  var methods = ['post', 'put', 'options', 'patch'] 
-  methods.map( function(method){
-    endpoint.prototype[method] = function(id, payload, headers){
-      var url = this.api.url + "/"+resourcename + "/" + id
-      return this.api.request( method, url, payload, headers)
-    }
-  })
-  this[resourcename] = new endpoint(resourcename, this)
-}
-
-api.prototype.sandboxUrl = function(url,destination){ // configure sandboxdata for url(pattern)
-  this.sandbox[url] = destination
-}
-
-api.prototype.getSandboxedUrl = function(method,url){
-  var config = {method:method, url:url, payload:{}, headers: this.headers, api:this }
-  for ( var regex in this.sandbox ) {                                                                            
-    var item = this.sandbox[regex]                                                                               
-    var method = method.toUpperCase()                                                                            
-    if( url.match( new RegExp(regex, "g") ) != null ){                                                           
-      if( item.path ){
-        var url_sandboxed = url.replace(/\/?\?.*/,'').replace( this.url, item.path ) + "/" + method.toLowerCase() + ".json"
-        console.log("sandboxed url: "+method+" "+url+" => "+url_sandboxed)                                       
-        return url_sandboxed 
-      }
-      if( item.data ){                                                                                           
-        console.log("sandboxed url: "+method+" "+url+" => {}")                                                   
-        var res = {body:item.data}                                                                               
-        for( i in this.requestPost ) this.requestPost[i](config, res)                                            
-        return new Promise(function(resolve, reject){ resolve(res.body) })                                       
-      }
-    }
-  }   
-  return false
-}
-
-Spadmin.prototype.registerElement = function (type, options) {
-  for( i in options )
-    if( typeof options[i] == "function" )
-      options[i] = { value: options[i] }
-  var prototype = { "prototype": Object.create( HTMLElement.prototype, options ) } 
-  return document.registerElement( type, prototype )
-}
 
 window.Spadmin = Spadmin
 window.Nanobar = Nanobar

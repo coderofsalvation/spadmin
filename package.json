@@ -1,14 +1,14 @@
 {
   "name": "spadmin",
-  "version": "1.1.9",
+  "version": "1.2.1",
   "description": "SPA rest-to-admin interface RAD-style in vanilla js",
   "main": "public/js/main.js",
   "dependencies": {
-    "document-register-element": "^0.5.4",
-    "stateful-event": "^1.0.1",
-    "whatwg-fetch": "^1.0.0"
   },
   "devDependencies": {
+    "document-register-element": "^0.5.4",
+    "restglue":"^1.0.4",
+    "stateful-event": "^1.0.1",
     "browserify": "^13.0.1",
     "cheerio": "^0.20.0",
     "fakerest": "^1.1.4",
@@ -22,8 +22,8 @@
     "transparency": "^1.0.0"
   },
   "scripts": {
-    "build": "cd src && cat 3rd/document-register-element.js 3rd/stateful-event.min.js 3rd/page.js 3rd/superagent.min.js 3rd/transparency.min.js 3rd/nanobar.min.js main.js > ../dist/spadmin.js && minify ../dist/spadmin.js > ../dist/spadmin.min.js",
-    "builddev": "cd src && cat 3rd/document-register-element.js 3rd/stateful-event.min.js 3rd/page.js 3rd/superagent.min.js 3rd/transparency.min.js 3rd/nanobar.min.js main.js > ../dist/spadmin.min.js",
+    "build": "cd src && cat 3rd/document-register-element.js 3rd/restglue.js 3rd/stateful-event.min.js 3rd/page.js 3rd/superagent.min.js 3rd/transparency.min.js 3rd/nanobar.min.js main.js > ../dist/spadmin.js && minify ../dist/spadmin.js > ../dist/spadmin.min.js",
+    "builddev": "cd src && cat 3rd/document-register-element.js 3rd/restglue.js 3rd/stateful-event.min.js 3rd/page.js 3rd/superagent.min.js 3rd/transparency.min.js 3rd/nanobar.min.js main.js > ../dist/spadmin.min.js",
     "run": "nodemon -w public app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

@@ -1,4 +1,4 @@
-var myElement = function(){
+var myResource = function(){
 
   this.createdCallback = function(){
     console.log('here I am ^_^ ');
@@ -36,4 +36,4 @@ var myElement = function(){
 
 }
 
-Spadmin.prototype.registerElement("my-element", new myElement )
+Spadmin.prototype.registerElement("resource", new myResource )

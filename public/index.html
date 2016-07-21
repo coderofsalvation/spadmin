@@ -76,7 +76,7 @@
       var spadmin = window.spadmin = new Spadmin()
 
       // FP goodies
-      var chain             = spadmin.fp.chain
+      var compose             = spadmin.fp.compose
       var curry             = spadmin.fp.curry
       var pick              = spadmin.fp.pick
       var createEventStream = spadmin.fp.createEventStream
@@ -123,7 +123,7 @@
       var pages = {
 
         viewUser: function () { 
-          spadmin.renderPage( '/viewUser.html',  {
+          spadmin.renderPage( '/pages/user.html',  {
             title:"View user", 
             name: "John Doe", 
             email: "john@doe.com"
@@ -150,7 +150,7 @@
           }
 
           createEventStream('.button', ['click','mouseover'] )(
-            chain( 
+            compose( 
               continueWhenStateIsNormal,
               pick('target.textContent'), 
               handleButton
