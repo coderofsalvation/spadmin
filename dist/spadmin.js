@@ -2811,23 +2811,27 @@ Spadmin.prototype.init = function(opts){ // initializes spadmin
   this.bus.state( this.bus.opts.defaultstate )
 }
 
-Spadmin.prototype.renderPage = function(template, data){ // evaluates transparency-template+data into spadmin.pageid 
+Spadmin.prototype.renderPage = function(template, data, cb){ // evaluates transparency-template+data into spadmin.pageid 
+  var me = this
   this.bus.publish("renderpage/pre",arguments)
   this.update( this.pageid, {show:false})
-  this.render(template, data, this.pageid )
-  this.update( this.pageid, {show:true})
-  this.bus.publish("renderpage/post",arguments)
+  this.render(template, data, this.pageid, function(){
+    if( cb ) cb.apply(this, arguments)
+    me.update( this.pageid, {show:true})
+    me.bus.publish("renderpage/post",arguments)
+  })
 }
 
-Spadmin.prototype.renderDOM = function (domel, data,  targetid,  cb) { // evaluates transparency-domtemplate+data into (dom) targetid-string (or replaces domtemplate)
+Spadmin.prototype.renderDOM = function (domel, data,  target,  cb) { // evaluates transparency-domtemplate+data into (dom) targetid-string (or replaces domtemplate)
   this.bus.publish("renderdom/pre",arguments)
-  var target = domel
-  if( targetid ){
-    target = document.getElementById(targetid)
-    if( !target ) throw "cannot find domid #"+targetid
-  } 
+  var _target = false
+  if( target ){
+    if( typeof target == "string" ) _target = document.getElementById(target)
+    else _target = target
+    if( !_target ) throw "cannot find target: "+targetid
+  }else _target = domel
   this.template.render( domel, data[0] || data, data[1] || {} )
-  if( targetid ) target.innerHTML = domel.innerHTML 
+  _target.innerHTML = domel.innerHTML 
   this.executeScripts( domel ) 
   if( cb  ) cb(domel, arguments) 
   this.bus.publish("renderdom/post",arguments)
@@ -2879,7 +2883,7 @@ Spadmin.prototype.render = function (template, data, targetid,  cb) { // evaluat
     }else if(template_is_url){
       superagent.get( template ).end( function(err,res){
         if( err ){
-          if( String(err).match(/Error:/) ) throw err 
+          if( String(err).match(/Error:/) || String(err).match(/cannot find/) ) throw err 
           else return me.bus.publish("error",{type:"server",data:{err:err,res:res}})
         }
         var domel = document.createElement('div')
