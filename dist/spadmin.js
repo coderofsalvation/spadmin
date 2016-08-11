@@ -3020,6 +3020,17 @@ fp.prototype.mapAsync = function(arr, done, next) {
   return funcs[0]();
 };
 
+fp.prototype.once = function(fn, context){ 
+  var result;
+  return function() { 
+    if(fn) {
+      result = fn.apply(context || this, arguments);
+      fn = null;
+    }
+    return result;
+  };
+}
+
 fp.prototype.delay = function(func,ms){  // setTimeout() with arguments order swapped
   return fp.prototype.curry(function(){
     setTimeout(func,ms)
@@ -3028,10 +3039,12 @@ fp.prototype.delay = function(func,ms){  // setTimeout() with arguments order sw
 
 fp.prototype.throttleDelay = function(delay,fn){ // ignore calls within ms, and only execute last call 
   timeoutid = null
-  return fp.prototype.curry(function(){
+  return function(){
     if( timeoutid != null ) clearTimeout(timeoutid)
-    timeoutid = setTimeout(fn,delay)
-  })
+    var args = [ fn, delay ]
+    for ( var i in arguments )  args.push( arguments[i] )
+    timeoutid = setTimeout.apply( this, args )
+  }
 }
 
 fp.prototype.throttle = fp.prototype.curry(function(delay, fn) { // execute fn, and then only execute every delay ms
