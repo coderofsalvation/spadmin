@@ -275,5 +275,13 @@ fp.prototype.throttle = fp.prototype.curry(function(delay, fn) { // execute fn, 
 
 Spadmin.prototype.fp = new fp
 
+Spadmin.prototype.registerElement = function (type, options) {
+  for( i in options )
+    if( typeof options[i] == "function" )
+      options[i] = { value: options[i] }
+  var prototype = { "prototype": Object.create( HTMLElement.prototype, options ) } 
+  return document.registerElement( type, prototype )
+}
+
 window.Spadmin = Spadmin
 window.Nanobar = Nanobar

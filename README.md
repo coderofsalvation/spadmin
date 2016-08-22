@@ -263,7 +263,10 @@ Now put this inside `js/element/my-element.js` :
 
     var myElement = function(){
       this.createdCallback          = function(){}
-      this.attachedCallback         = function(){}
+      this.attachedCallback         = function(){
+        this.innerHTML        = "Foobar"       // set HTMLElement properties
+        this.somevariable  = "Hello world"     // store/reference data 
+      }
       this.detachedCallback         = function(){}
       this.attributeChangedCallback = function( name, previousValue, value ){}
     }
