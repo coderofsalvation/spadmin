@@ -1486,7 +1486,9 @@ request.put = function(url, data, fn){
 };
 
 },{"./is-object":3,"./request":5,"./request-base":4,"emitter":1,"reduce":2}]},{},[])("superagent")
-});var restglue = function(apiurl){
+});
+
+var restglue = function(apiurl){
   this.url = apiurl || ""
   this.sandbox = {}
   this.headers = {}
@@ -1517,8 +1519,8 @@ restglue.prototype.request = function(method, url, payload, query, headers) {
   if( method != "get" ) req.send(payload)
   return new Promise(function(resolve, reject){
     req.end( function(err, res){
-      spadmin.bus.publish(method+"."+url.replace(/\?.*/g,"").replace(/\/[0-9]+$/,"/:id"), arguments )
       for( i in me.requestPost ) me.requestPost[i](config, res, err)
+      if( typeof res.body == 'object' ) res.body.getResponse = function(){ return res }
       if( !err ) resolve(res.body)
       else reject(err, res)
     })
@@ -1622,9 +1624,12 @@ mapAsync = function(arr, done, cb) {
   return funcs[0]();
 };
 
-if (typeof module !== 'undefined' && typeof module.exports !== 'undefined')
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined'){
+  var superagent = require('superagent')
   module.exports = restglue;
-else window.restglue = restglue
+} else{
+  window.restglue = restglue
+}
 bus = function(opts){
   this.opts = opts || {}
   this.channels = []
@@ -3062,6 +3067,14 @@ fp.prototype.throttle = fp.prototype.curry(function(delay, fn) { // execute fn, 
 })
 
 Spadmin.prototype.fp = new fp
+
+Spadmin.prototype.registerElement = function (type, options) {
+  for( i in options )
+    if( typeof options[i] == "function" )
+      options[i] = { value: options[i] }
+  var prototype = { "prototype": Object.create( HTMLElement.prototype, options ) } 
+  return document.registerElement( type, prototype )
+}
 
 window.Spadmin = Spadmin
 window.Nanobar = Nanobar
