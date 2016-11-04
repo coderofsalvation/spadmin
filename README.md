@@ -237,8 +237,9 @@ You can fake responses (for offline development etc) in 2 ways, like so:
     spadmin.api.addEndpoint("foobar")
     spadmin.api.addEndpoint("foo")
 
-    spadmin.api.sandboxUrl('/foobar', {'data':{"foo":true}}  ) 
-    spadmin.api.sandboxUrl('/myapi',  {'path':"/js/sandbox"} )
+    spadmin.api.sandboxUrl('/foobar',       {'data':{"foo":true}}  ) 
+    spadmin.api.sandboxUrl('/myapi',        {'path':"/js/sandbox"} )
+    spadmin.api.sandboxUrl( /some.*regex/,  "/js/foo" )
 
     spadmin.api.foobar.getAll().then(function(data){    
       // data = {"foo":true}

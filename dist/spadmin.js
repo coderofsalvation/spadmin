@@ -1520,12 +1520,18 @@ restglue.prototype.request = function(method, url, payload, query, headers) {
   return new Promise(function(resolve, reject){
     req.end( function(err, res){
       for( i in me.requestPost ) me.requestPost[i](config, res, err)
-      if( typeof res.body == 'object' ) res.body.getResponse = function(){ return res }
-      if( !err ) resolve(res.body)
-      else reject(err, res)
+      if( !err ){
+        if( typeof res.body == 'object' ) res.body.getResponse = function(){ return res }
+        resolve(res.body)
+      } else{
+        console.error(err)
+        console.error(JSON.stringify({url:url, payload:payload, query:query, headers:headers}))
+        reject(err, res)
+      } 
     })
-  }).catch(function(err){
-    throw err
+  // older android browser (2.3.6) doesn't like this..why?
+  //}).catch(function(err){
+  //  throw err
   })
 }
 
@@ -1567,9 +1573,14 @@ restglue.prototype.getSandboxedUrl = function(method,url){
   for ( var regex in this.sandbox ) {
     var item = this.sandbox[regex]
     var method = method.toUpperCase()
+    console.log("regex: "+regex)
     if( url.match( new RegExp(regex, "g") ) != null ){
       if( item.path ){
-        var url_sandboxed = url.replace(/\/?\?.*/,'').replace( this.url, item.path ) + "/" + method.toLowerCase() + ".json"
+        var slug = ''
+        slug = url.replace( this.url, "")
+        slug = slug.replace(/\/?\?.*/,'')                   // remove query
+        slug = slug.replace(/\/[0-9]+/, '')   // remove id-parmeters
+        var url_sandboxed = item.path + slug + "/" + method.toLowerCase() + ".json"
         console.log("sandboxed url: "+method+" "+url+" => "+url_sandboxed)
         return url_sandboxed
       }
