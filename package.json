@@ -1,13 +1,13 @@
 {
   "name": "spadmin",
-  "version": "1.2.58",
+  "version": "1.2.59",
   "description": "SPA rest-to-admin interface RAD-style in vanilla js",
   "main": "public/js/main.js",
   "dependencies": {
   },
   "devDependencies": {
     "document-register-element": "^0.5.4",
-    "restglue":"^1.0.12",
+    "restglue":"^1.0.17",
     "stateful-event": "^1.0.1",
     "browserify": "^13.0.1",
     "cheerio": "^0.20.0",

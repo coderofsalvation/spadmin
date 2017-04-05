@@ -1486,7 +1486,25 @@ request.put = function(url, data, fn){
 };
 
 },{"./is-object":3,"./request":5,"./request-base":4,"emitter":1,"reduce":2}]},{},[])("superagent")
-});
+});var mapAsync = function(arr, done, cb) {
+  var f, funcs, i, k, v; funcs = []; i = 0;
+  for (k in arr) {
+    v = arr[k];
+    f = function(i, v) {
+      return function() {
+        var e, error;
+        try {
+          return cb(v, i, funcs[i+1] || done);
+        } catch (error) {
+          e = error;
+          return done(new Error(e));
+        }
+      };
+    };
+    funcs.push(f(i++, v));
+  }
+  return funcs[0]();
+};
 
 var restglue = function(apiurl){
   this.url = apiurl || ""
@@ -1507,8 +1525,8 @@ restglue.prototype.afterRequest = function (cb) {
 restglue.prototype.request = function(method, url, payload, query, headers) {
   var me = this
   var config = {method:method, url:url, query:query, payload:payload, headers:headers, api:this }
-  if( query && typeof query == "string" ) url+= ( config.queryString = query )
-  if( query && typeof query != "string" ) url+= ( config.queryString = "?"+me.toQueryString(query) )
+  if( query && typeof query == "string" ) config.url+= ( config.queryString = query )
+  if( query && typeof query != "string" ) config.url+= ( config.queryString = "?"+me.toQueryString(query) )
   for( var i in this.requestPre ) this.requestPre[i](config)
   var sandbox = this.getSandboxedUrl(config.method,config.url)
   if( sandbox && typeof sandbox != "string" ) return sandbox // return sandboxed promise
@@ -1554,7 +1572,11 @@ restglue.prototype.addEndpoint = function ( resourcename ){
     if( id ) url+= "/"+id
     return this.api.request( "get", url, false, query, headers)
   }
-  var methods = ['post', 'put', 'options', 'patch']
+  endpoint.prototype.post = function(payload, query, headers){
+    var url = this.api.url + "/"+resourcename
+    return this.api.request( "post", url, payload, query, headers)
+  }
+  var methods = ['put', 'options', 'patch', 'delete']
   methods.map( function(method){
     endpoint.prototype[method] = function(id, payload, query, headers){
       var url = this.api.url + "/"+resourcename + "/" + id
@@ -1573,6 +1595,7 @@ restglue.prototype.getSandboxedUrl = function(method,url){
   for ( var regex in this.sandbox ) {
     var item = this.sandbox[regex]
     var method = method.toUpperCase()
+
     if( url.match( new RegExp(regex, "g") ) != null ){
       if( item.path ){
         var slug = ''
@@ -1614,26 +1637,6 @@ restglue.prototype.compose = function(chain){
     })    
   }        
 }
-
-mapAsync = function(arr, done, cb) {
-  var f, funcs, i, k, v; funcs = []; i = 0;
-  for (k in arr) {
-    v = arr[k];
-    f = function(i, v) {
-      return function() {
-        var e, error;
-        try {
-          return cb(v, i, funcs[i+1] || done);
-        } catch (error) {
-          e = error;
-          return done(new Error(e));
-        }
-      };
-    };
-    funcs.push(f(i++, v));
-  }
-  return funcs[0]();
-};
 
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined'){
   var superagent = require('superagent')
@@ -3041,6 +3044,19 @@ fp.prototype.once = function(fn, context){
   return function() { 
     if(fn) {
       result = fn.apply(context || this, arguments);
+      fn = null;
+    }
+    return result;
+  };
+}
+
+fp.prototype.callMaxtimes = function(maxtimes, fn, context){ 
+  var times = 0;
+  var result;
+  return function() { 
+    if(fn && times < maxtimes) {
+      result = fn.apply(context || this, arguments);
+      times++
       fn = null;
     }
     return result;

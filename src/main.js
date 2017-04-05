@@ -243,6 +243,19 @@ fp.prototype.once = function(fn, context){
   };
 }
 
+fp.prototype.callMaxtimes = function(maxtimes, fn, context){ 
+  var times = 0;
+  var result;
+  return function() { 
+    if(fn && times < maxtimes) {
+      result = fn.apply(context || this, arguments);
+      times++
+      fn = null;
+    }
+    return result;
+  };
+}
+
 fp.prototype.delay = function(func,ms){  // setTimeout() with arguments order swapped
   return fp.prototype.curry(function(){
     setTimeout(func,ms)
